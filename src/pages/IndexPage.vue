@@ -45,79 +45,66 @@
 <script lang='ts' setup>
 import { ref, watch, computed } from 'vue';
 import type { Ref } from 'vue';
-import { computed } from 'vue';
 import { useStore } from 'vuex';
+import { storeKey } from 'src/store'; // 適切なパスに修正してください
 
-const store = useStore();
+const store = useStore(storeKey);
 
-// 状態を永続化するためのnuxt-storageを使用
-const inputText: Ref<string> = ref(NuxtStorage.localStorage.getData('inputText') || '');
-const sampleText: Ref<string> = ref(
-  NuxtStorage.localStorage.getData('sampleText') || 'ここにサンプルテキストを設定',
-);
-const isInputBlocked: Ref<boolean> = ref(
-  NuxtStorage.localStorage.getData('isInputBlocked') || false,
-);
-const showShakyo: Ref<boolean> = ref(
-  NuxtStorage.localStorage.getData('showShakyo') !== null
-    ? NuxtStorage.localStorage.getData('showShakyo')
-    : false,
-);
-const showSample: Ref<boolean> = ref(
-  NuxtStorage.localStorage.getData('showSample') !== null
-    ? NuxtStorage.localStorage.getData('showSample')
-    : false,
-);
-const isTypo: Ref<boolean> = ref(NuxtStorage.localStorage.getData('isTypo') || false);
-const isCompleted: Ref<boolean> = ref(
-  NuxtStorage.localStorage.getData('isCompleted') || false,
-);
-
-// 状態を監視してlocalStorageに保存
-watch(showShakyo, (newVal) => {
-  NuxtStorage.localStorage.setData('showShakyo', newVal);
-});
-watch(showSample, (newVal) => {
-  NuxtStorage.localStorage.setData('showSample', newVal);
-});
-watch(inputText, (newVal) => {
-  NuxtStorage.localStorage.setData('inputText', newVal);
-});
-watch(sampleText, (newVal) => {
-  NuxtStorage.localStorage.setData('sampleText', newVal);
+// Vuexストアの状態をリアクティブに参照するcomputedプロパティ
+const inputText = computed({
+  get: () => store.state.shakyo.inputText,
+  set: (value) => store.commit('shakyo/setInputText', value)
 });
 
-const formattedSampleText = computed(() => {
-  return sampleText.value.replace(/\n/g, '<br>');
+const sampleText = computed(() => store.state.shakyo.sampleText);
+
+const isInputBlocked = computed(() => store.state.shakyo.isInputBlocked);
+
+const showShakyo = computed({
+  get: () => store.state.shakyo.showShakyo,
+  set: (value) => store.commit('shakyo/setShowShakyo', value)
 });
-// shakyo開始処理
+
+const showSample = computed({
+  get: () => store.state.shakyo.showSample,
+  set: (value) => store.commit('shakyo/setShowSample', value)
+});
+
+const isTypo = computed(() => store.state.shakyo.isTypo);
+
+const isCompleted = computed(() => store.state.shakyo.isCompleted);
+
+// Vuexストアの状態を更新するためのメソッド
 const startShakyo = () => {
-  showShakyo.value = true;
-  sampleText.value = inputText.value;
-  inputText.value = '';
-  isInputBlocked.value = false;
-  isCompleted.value = false; // ここでisCompletedもリセットする
-  NuxtStorage.localStorage.setData('showShakyo', true);
-  NuxtStorage.localStorage.removeItem('isCompleted');
+  store.dispatch('shakyo/startShakyo');
 };
 
 const toggleSample = () => {
   showSample.value = !showSample.value;
-  NuxtStorage.localStorage.setData('showSample', showSample.value);
 };
 
 const clearText = () => {
-  inputText.value = '';
-  isInputBlocked.value = false;
-  isCompleted.value = false;
-  isTypo.value = false;
-  showShakyo.value = false; // これもリセットする
-  NuxtStorage.localStorage.removeItem('inputText');
-  NuxtStorage.localStorage.removeItem('isInputBlocked');
-  NuxtStorage.localStorage.removeItem('isCompleted');
-  NuxtStorage.localStorage.removeItem('isTypo');
-  NuxtStorage.localStorage.removeItem('showShakyo');
+  store.dispatch('shakyo/clearText');
 };
+
+// 状態変更を監視して自動的にストアを更新
+watch(showShakyo, (newVal) => {
+  store.commit('shakyo/setShowShakyo', newVal);
+});
+watch(showSample, (newVal) => {
+  store.commit('shakyo/setShowSample', newVal);
+});
+watch(inputText, (newVal) => {
+  store.commit('shakyo/setInputText', newVal);
+});
+watch(sampleText, (newVal) => {
+  store.commit('shakyo/setSampleText', newVal);
+});
+
+// サンプルテキストをHTMLにフォーマット
+const formattedSampleText = computed(() => {
+  return sampleText.value.replace(/\n/g, '<br>');
+});
 
 const inputError: Ref<string> = ref(''); // エラーメッセージ用のリファレンス
 // 既に宣言されている場合は、以下は不要です

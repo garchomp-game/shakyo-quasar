@@ -1,9 +1,18 @@
 // store/shakyo.ts
-import { createStore } from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
 
-export default createStore({
-  state: {
+interface ShakyoState {
+  inputText: string;
+  sampleText: string;
+  isInputBlocked: boolean;
+  showShakyo: boolean;
+  showSample: boolean;
+  isTypo: boolean;
+  isCompleted: boolean;
+}
+
+export default {
+  namespaced: true,
+  state: (): ShakyoState => ({
     inputText: '',
     sampleText: 'ここにサンプルテキストを設定',
     isInputBlocked: false,
@@ -11,49 +20,74 @@ export default createStore({
     showSample: false,
     isTypo: false,
     isCompleted: false,
-  },
+  }),
   mutations: {
-    setInputText(state, inputText) {
-      state.inputText = inputText;
+    setInputText(state: ShakyoState, value: string) {
+      state.inputText = value;
     },
-    setSampleText(state, sampleText) {
-      state.sampleText = sampleText;
+    setSampleText(state: ShakyoState, value) {
+      state.sampleText = value;
     },
-    setIsInputBlocked(state, isInputBlocked) {
-      state.isInputBlocked = isInputBlocked;
+    setIsInputBlocked(state: ShakyoState, value) {
+      state.isInputBlocked = value;
     },
-    setShowShakyo(state, showShakyo) {
-      state.showShakyo = showShakyo;
+    setShowShakyo(state: ShakyoState, value) {
+      state.showShakyo = value;
     },
-    setShowSample(state, showSample) {
-      state.showSample = showSample;
+    setShowSample(state: ShakyoState, value) {
+      state.showSample = value;
     },
-    setIsTypo(state, isTypo) {
-      state.isTypo = isTypo;
+    setIsTypo(state: ShakyoState, value) {
+      state.isTypo = value;
     },
-    setIsCompleted(state, isCompleted) {
-      state.isCompleted = isCompleted;
+    setIsCompleted(state: ShakyoState, value) {
+      state.isCompleted = value;
     },
-    clearText(state) {
+    clearText(state: ShakyoState) {
       state.inputText = '';
       state.isInputBlocked = false;
       state.isCompleted = false;
       state.isTypo = false;
       state.showShakyo = false;
+      state.showSample = false; // 必要に応じて追加
     },
-    startShakyo(state) {
+    startShakyo(state: ShakyoState) {
       state.showShakyo = true;
       state.sampleText = state.inputText;
       state.inputText = '';
       state.isInputBlocked = false;
       state.isCompleted = false;
     },
-    toggleSample(state) {
+    toggleSample(state: ShakyoState) {
       state.showSample = !state.showSample;
     }
   },
   actions: {
-    // ここにアクションを追加 (例: APIからデータを取得して状態を更新)
+    updateInputText({ commit }, value) {
+      commit('setInputText', value);
+    },
+    startShakyoProcess({ commit }) {
+      commit('startShakyo');
+    },
+    toggleSampleVisibility({ commit }) {
+      commit('toggleSample');
+    },
+    clearAllText({ commit }) {
+      commit('clearText');
+    }
+    // 他のアクションをここに追加
   },
-  plugins: [createPersistedState()],
-});
+  getters: {
+    inputText: (state: ShakyoState) => state.inputText,
+    sampleText: (state: ShakyoState) => state.sampleText,
+    isInputBlocked: (state: ShakyoState) => state.isInputBlocked,
+    showShakyo: (state: ShakyoState) => state.showShakyo,
+    showSample: (state: ShakyoState) => state.showSample,
+    isTypo: (state: ShakyoState) => state.isTypo,
+    isCompleted: (state: ShakyoState) => state.isCompleted,
+    formattedSampleText: (state: ShakyoState) => {
+      return state.sampleText.replace(/\n/g, '<br>');
+    }
+    // 他のゲッターをここに追加
+  },
+};
