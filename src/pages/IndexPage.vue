@@ -12,7 +12,7 @@
         <div v-if="inputError" class="alert alert-danger">
           {{ inputError }}
         </div>
-<!-- 既存のテキストエリアとボタンのコード -->
+        <!-- 既存のテキストエリアとボタンのコード -->
         <button class="btn btn-primary my-2" @click="startShakyo">
           shakyo開始
         </button>
@@ -53,53 +53,37 @@ const store = useStore(storeKey);
 // Vuexストアの状態をリアクティブに参照するcomputedプロパティ
 const inputText = computed({
   get: () => store.state.shakyo.inputText,
-  set: (value) => store.commit('shakyo/setInputText', value)
+  set: (value) => store.dispatch('shakyo/updateInputText', value),
 });
 
 const sampleText = computed(() => store.state.shakyo.sampleText);
-
-const isInputBlocked = computed(() => store.state.shakyo.isInputBlocked);
-
-const showShakyo = computed({
-  get: () => store.state.shakyo.showShakyo,
-  set: (value) => store.commit('shakyo/setShowShakyo', value)
-});
-
+const isInputBlocked = computed({
+  get: () => store.state.shakyo.isInputBlocked,
+  set: (value) => store.commit('shakyo/setIsInputBlocked', value),
+})
+const showShakyo = computed(() => store.state.shakyo.showShakyo);
 const showSample = computed({
   get: () => store.state.shakyo.showSample,
-  set: (value) => store.commit('shakyo/setShowSample', value)
+  set: (value) => store.commit('shakyo/setShowSample', value), // 正しいmutationを呼び出す
 });
-
 const isTypo = computed(() => store.state.shakyo.isTypo);
-
-const isCompleted = computed(() => store.state.shakyo.isCompleted);
+const isCompleted = computed({
+  get: () => store.state.shakyo.isCompleted,
+  set: (value) => store.commit('shakyo/setIsCompleted', value),
+});
 
 // Vuexストアの状態を更新するためのメソッド
 const startShakyo = () => {
-  store.dispatch('shakyo/startShakyo');
+  store.dispatch('shakyo/startShakyoProcess');
 };
 
 const toggleSample = () => {
-  showSample.value = !showSample.value;
+  store.dispatch('shakyo/toggleSampleVisibility');
 };
 
 const clearText = () => {
-  store.dispatch('shakyo/clearText');
+  store.dispatch('shakyo/clearAllText');
 };
-
-// 状態変更を監視して自動的にストアを更新
-watch(showShakyo, (newVal) => {
-  store.commit('shakyo/setShowShakyo', newVal);
-});
-watch(showSample, (newVal) => {
-  store.commit('shakyo/setShowSample', newVal);
-});
-watch(inputText, (newVal) => {
-  store.commit('shakyo/setInputText', newVal);
-});
-watch(sampleText, (newVal) => {
-  store.commit('shakyo/setSampleText', newVal);
-});
 
 // サンプルテキストをHTMLにフォーマット
 const formattedSampleText = computed(() => {
@@ -113,7 +97,10 @@ const checkInput = () => {
   if (showShakyo.value) {
     // 正しい部分の長さを特定
     let correctLength = 0;
-    while (correctLength < inputText.value.length && inputText.value[correctLength] === sampleText.value[correctLength]) {
+    while (
+      correctLength < inputText.value.length &&
+      inputText.value[correctLength] === sampleText.value[correctLength]
+    ) {
       correctLength++;
     }
 
@@ -131,10 +118,11 @@ const checkInput = () => {
     }
 
     isCompleted.value = inputText.value === sampleText.value;
-    inputError.value = isInputBlocked.value ? '入力したテキストが一致しません' : '';
+    inputError.value = isInputBlocked.value
+      ? '入力したテキストが一致しません'
+      : '';
   }
 };
-
 
 // ユーザーの入力を監視
 watch(inputText, checkInput);
