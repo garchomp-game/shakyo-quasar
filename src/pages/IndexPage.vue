@@ -83,6 +83,7 @@ const toggleSample = () => {
 
 const clearText = () => {
   store.dispatch('shakyo/clearAllText');
+  formattedInputText.value = '';
 };
 
 // サンプルテキストをHTMLにフォーマット
