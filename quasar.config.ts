@@ -222,9 +222,9 @@ export default configure((ctx) => {
             },
           ],
         },
-        mac: {
-          category: 'public.app-category.education'
-        }
+        // mac: {
+        //   category: 'public.app-category.education'
+        // }
       }
     },
 
