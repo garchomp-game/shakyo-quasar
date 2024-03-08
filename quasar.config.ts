@@ -223,6 +223,12 @@ export default configure((ctx) => {
           ],
         },
         mac: {
+          target: [
+            {
+              target: 'dmg',
+              arch: ['arm64', 'x64']
+            }
+          ],
           category: 'public.app-category.education'
         }
       }
