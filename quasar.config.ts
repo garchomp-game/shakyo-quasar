@@ -195,19 +195,24 @@ export default configure((ctx) => {
       // specify the debugging port to use for the Electron app when running in development mode
       inspectPort: 5858,
 
-      bundler: 'builder', // 'packager' or 'builder'
+      bundler: 'packager', // 'packager' or 'builder'
 
       packager: {
-        // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
-
-        // OS X / Mac App Store
-        // appBundleId: '',
-        // appCategoryType: '',
-        // osxSign: '',
-        // protocol: 'myapp://path',
-
-        // Windows only
-        // win32metadata: { ... }
+        // Electron Packagerの設定...
+        platform: 'darwin', // macOS用のビルド
+        arch: 'arm64', // M1、M2チップ用にarm64アーキテクチャをターゲット
+        overwrite: true, // 既存の出力ディレクトリを上書き
+        appCategoryType: 'public.app-category.education', // アプリカテゴリ
+        osxSign: {
+          'hardened-runtime': true, // ハードンドランタイムを有効にする
+          entitlements: 'src-electron/entitlements.mac.plist', // エンタイトルメントファイルのパス
+          'entitlements-inherit': 'src-electron/entitlements.mac.plist', // 継承するエンタイトルメントファイルのパス
+          'signature-flags': 'library'
+        },
+        osxNotarize: {
+          appleId: 'your@appleid.com',
+          appleIdPassword: '@keychain:AC_PASSWORD',
+        }
       },
 
       builder: {
